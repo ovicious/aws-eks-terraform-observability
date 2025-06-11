@@ -20,6 +20,11 @@ data "aws_availability_zones" "available" {
   state = "available"
 }
 
+# Cluster name local value
+locals {
+  cluster_name = "${var.project_name}-${var.environment}-eks"
+}
+
 # Public subnets
 resource "aws_subnet" "public" {
   count                   = length(local.azs)
@@ -28,10 +33,12 @@ resource "aws_subnet" "public" {
   availability_zone       = local.azs[count.index]
 
   tags = {
-    Name        = "${var.project_name}-${var.environment}-public-${local.azs[count.index]}"
-    Environment = var.environment
-    Project     = var.project_name
-    Type        = "public"
+    Name                                      = "${var.project_name}-${var.environment}-public-${local.azs[count.index]}"
+    Environment                               = var.environment
+    Project                                   = var.project_name
+    Type                                      = "public"
+    "kubernetes.io/role/elb"                  = "1"
+    "kubernetes.io/cluster/${local.cluster_name}" = "shared"
   }
 }
 
@@ -43,10 +50,12 @@ resource "aws_subnet" "private" {
   availability_zone = local.azs[count.index]
 
   tags = {
-    Name        = "${var.project_name}-${var.environment}-private-${local.azs[count.index]}"
-    Environment = var.environment
-    Project     = var.project_name
-    Type        = "private"
+    Name                                      = "${var.project_name}-${var.environment}-private-${local.azs[count.index]}"
+    Environment                               = var.environment
+    Project                                   = var.project_name
+    Type                                      = "private"
+    "kubernetes.io/role/internal-elb"         = "1"
+    "kubernetes.io/cluster/${local.cluster_name}" = "shared"
   }
 }
 
@@ -113,7 +122,7 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_AmazonEKSServicePolicy" {
 }
 
 resource "aws_eks_cluster" "main" {
-  name     = "${var.project_name}-${var.environment}-eks"
+  name     = local.cluster_name
   role_arn = aws_iam_role.eks_cluster_role.arn
 
   vpc_config {
@@ -205,23 +214,35 @@ data "aws_ami" "eks_worker" {
   }
 }
 
-resource "aws_instance" "eks_unmanaged_node" {
-  ami           = data.aws_ami.eks_worker.id
-  instance_type = var.node_instance_type
-  subnet_id     = aws_subnet.public[0].id
-  key_name      = null
-  iam_instance_profile = aws_iam_instance_profile.eks_node_instance_profile.name
-  vpc_security_group_ids = [aws_security_group.eks_node.id]
+
+resource "aws_eks_node_group" "default" {
+  cluster_name    = aws_eks_cluster.main.name
+  node_group_name = "${var.project_name}-${var.environment}-ng"
+  node_role_arn   = aws_iam_role.eks_node_role.arn
+  subnet_ids      = aws_subnet.private[*].id
+
+  scaling_config {
+    desired_size = 1
+    max_size     = 2
+    min_size     = 1
+  }
+
+  instance_types = [var.node_instance_type]
+  ami_type       = "AL2_ARM_64" # For t4g.small (ARM64), use AL2_ARM_64
+
+  remote_access {
+    ec2_ssh_key = null # No SSH access
+  }
 
   tags = {
-    Name = "${var.project_name}-${var.environment}-eks-unmanaged-node"
+    Name = "${var.project_name}-${var.environment}-eks-node-group"
   }
 
   depends_on = [
-    aws_eks_cluster.main
+    aws_iam_role_policy_attachment.eks_node_AmazonEKSWorkerNodePolicy,
+    aws_iam_role_policy_attachment.eks_node_AmazonEKS_CNI_Policy,
+    aws_iam_role_policy_attachment.eks_node_AmazonEC2ContainerRegistryReadOnly
   ]
 }
-
-# ############ Create EKS Cluster END ####################
 
 
