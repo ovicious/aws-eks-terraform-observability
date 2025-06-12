@@ -25,7 +25,23 @@ variable "enable_observability" {
 variable "env_name" {
   description = "Environment name"
   type        = string
-  default     = "demo"
+  default     = "dev"
+}
+
+variable "project_name" {
+  description = "Project name"
+  type        = string
+  default     = "demo-project"
+}
+variable "owner" {
+  description = "Owner of the resources"
+  type        = string
+  default     = "avi"
+}
+variable "version" {
+  description = "Version of the infrastructure"
+  type        = string
+  default     = "1.0.0"
 }
 variable "aws_profile" {
   description = "AWS profile to use"

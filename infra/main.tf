@@ -38,7 +38,10 @@ provider "kubernetes" {
 locals {
   common_tags = {
     Environment = var.env_name
-    Project     = "jucr-observability"
+    Project     = var.project_name
+    Owner       = var.owner
+    CreatedAt   = timestamp()
+    Version     = var.version
   }
 }
 
