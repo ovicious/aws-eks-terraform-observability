@@ -12,10 +12,13 @@ aws_region = "eu-west-1"
 
 # Cluster configuration
 instance_types = ["t3.medium"]
+node_disk_size    = 10  # in GB, set to null for default
 desired_capacity = 2
 min_capacity = 1
 max_capacity = 3
 
 # Observability settings
+grafana_admin_user = "admin"
+grafana_admin_password = "adminPassword"
 observability_storage_size = "5Gi"
 observability_retention_hours = 1

@@ -38,6 +38,11 @@ variable "instance_types" {
   type        = list(string)
 }
 
+variable "node_disk_size" {
+  description = "Disk size for worker nodes in GB"
+  type        = number
+  default     = null
+}
 variable "desired_capacity" {
   description = "Desired worker nodes count"
   type        = number

@@ -41,7 +41,7 @@ locals {
     Project     = var.project_name
     Owner       = var.owner
     CreatedAt   = timestamp()
-    Version     = var.version
+    Version     = var.infra_version
   }
 }
 
@@ -72,6 +72,7 @@ module "eks" {
   cluster_role_arn   = try(module.iam[0].eks_cluster_role_arn, null)
   node_role_arn      = try(module.iam[0].eks_node_role_arn, null)
   instance_types     = var.instance_types
+  node_disk_size     = var.node_disk_size
   desired_capacity   = var.desired_capacity
   min_capacity       = var.min_capacity
   max_capacity       = var.max_capacity
@@ -81,7 +82,6 @@ module "eks" {
 module "observability" {
   count  = var.enable_observability ? 1 : 0
   source = "./modules/observability"
-
   env_name          = var.env_name
   cluster_name      = try(module.eks[0].cluster_name, null)
   oidc_provider_arn = try(module.eks[0].oidc_provider_arn, null)
@@ -93,9 +93,10 @@ module "observability" {
   cluster_autoscaler_role_arn = try(module.iam[0].cluster_autoscaler_role_arn, null)
 
   observability_config = {
-    storage_size    = var.observability_storage_size
-    retention_hours = var.observability_retention_hours
+    storage_size           = var.observability_storage_size
+    retention_hours        = var.observability_retention_hours
   }
-
+  grafana_admin_password = var.grafana_admin_password
+  grafana_admin_user     = var.grafana_admin_user
   depends_on = [module.eks]
 }

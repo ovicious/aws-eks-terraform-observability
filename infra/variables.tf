@@ -38,7 +38,7 @@ variable "owner" {
   type        = string
   default     = "avi"
 }
-variable "version" {
+variable "infra_version" {
   description = "Version of the infrastructure"
   type        = string
   default     = "1.0.0"
@@ -60,6 +60,11 @@ variable "instance_types" {
   description = "EKS worker node instance types"
   type        = list(string)
   default     = ["t3.medium"]
+}
+variable "node_disk_size" {
+  description = "EKS worker node disk size in GB"
+  type        = number
+  default     = 20
 }
 
 variable "desired_capacity" {
@@ -96,6 +101,15 @@ variable "observability_retention_hours" {
   description = "Retention hours for observability stack"
   type        = number
   default     = 2
+}
+variable "grafana_admin_user" {
+  description = "Grafana admin user"
+  type        = string
+}
+
+variable "grafana_admin_password" {
+  description = "Grafana admin password"
+  type        = string
 }
 
 variable "enable_alb_controller" {

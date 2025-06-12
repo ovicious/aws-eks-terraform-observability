@@ -52,3 +52,13 @@ variable "observability_config" {
     retention_hours = 2
   }
 }
+
+variable "grafana_admin_user" {
+  description = "Grafana admin user"
+  type        = string
+}
+
+variable "grafana_admin_password" {
+  description = "Grafana admin password"
+  type        = string
+}

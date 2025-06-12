@@ -29,7 +29,9 @@ resource "aws_eks_node_group" "main" {
   }
 
   instance_types = var.instance_types
-
+  disk_size = var.node_disk_size != null ? var.node_disk_size : 20
+  ami_type   = "AL2_x86_64"
+  capacity_type = "ON_DEMAND"
   depends_on = [
     aws_iam_role_policy_attachment.eks_worker_node_policy,
     aws_iam_role_policy_attachment.eks_cni_policy,

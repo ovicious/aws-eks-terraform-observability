@@ -36,19 +36,6 @@ resource "helm_release" "prometheus" {
   })]
 }
 
-# resource "helm_release" "prometheus" {
-#   count      = var.cluster_name != null ? 1 : 0
-#   name       = "prometheus"
-#   repository = "https://prometheus-community.github.io/helm-charts"
-#   chart      = "kube-prometheus-stack"
-#   namespace  = kubernetes_namespace.monitoring[0].metadata[0].name
-#   version    = "46.8.0"
-#   values     = [templatefile("${path.module}/prometheus-values.yaml", {
-#     retention_hours = var.retention_hours
-#   })]
-
-#   depends_on = [kubernetes_persistent_volume_claim.observability_storage]
-# }
 
 resource "helm_release" "loki" {
   count      = var.cluster_name != null ? 1 : 0
@@ -74,8 +61,8 @@ resource "helm_release" "grafana" {
   values     = [file("${path.module}/grafana-values.yaml")]
 
   set_sensitive {
-    name  = "adminPassword"
-    value = "demo123" # Change for production
+    name  = var.grafana_admin_user
+    value = var.grafana_admin_password
   }
 
   depends_on = [helm_release.prometheus, helm_release.loki]
@@ -84,7 +71,6 @@ resource "helm_release" "grafana" {
 # Conditional ALB Controller Installation
 resource "helm_release" "aws_load_balancer_controller" {
   count = var.enable_alb_controller ? 1 : 0  # ← Only install if enabled
-
   name       = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
   chart      = "aws-load-balancer-controller"
