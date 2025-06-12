@@ -1,0 +1,30 @@
+loki:
+  config:
+    auth_enabled: false
+    ingester:
+      lifecycler:
+        ring:
+          kvstore:
+            store: inmemory
+        final_sleep: 0s
+      chunk_idle_period: 5m
+      chunk_target_size: 1048576
+    schema_config:
+      configs:
+        - from: 2020-10-24
+          store: boltdb-shipper
+          object_store: filesystem
+          schema: v11
+          index:
+            prefix: index_
+            period: 24h
+    server:
+      http_listen_port: 3100
+    storage_config:
+      boltdb_shipper:
+        active_index_directory: /var/loki/boltdb-shipper-active
+        cache_location: /var/loki/boltdb-shipper-cache
+        cache_ttl: 24h
+        shared_store: filesystem
+      filesystem:
+        directory: /var/loki/chunks

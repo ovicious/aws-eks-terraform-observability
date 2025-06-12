@@ -1,0 +1,21 @@
+# Enable modules
+enable_vpc = true
+enable_eks = true
+enable_iam = true
+enable_observability = false
+enable_alb_controller = false
+
+
+# Basic configuration
+env_name = "demo"
+aws_region = "eu-west-1"
+
+# Cluster configuration
+instance_types = ["t3.medium"]
+desired_capacity = 2
+min_capacity = 1
+max_capacity = 3
+
+# Observability settings
+observability_storage_size = "5Gi"
+observability_retention_hours = 1

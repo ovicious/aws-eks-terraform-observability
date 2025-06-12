@@ -1,0 +1,40 @@
+mode: deployment
+
+config:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+        http:
+    filelog:
+      include: [ /var/log/containers/*.log ]
+      start_at: beginning
+
+  processors:
+    batch:
+    memory_limiter:
+      check_interval: 1s
+      limit_mib: 500
+      spike_limit_mib: 200
+
+  exporters:
+    prometheusremotewrite:
+      endpoint: "http://prometheus-kube-prometheus-prometheus:9090/api/v1/write"
+    loki:
+      endpoint: "${loki_endpoint}"
+      labels:
+        resource:
+          k8s.cluster.name: "${cluster_name}"
+    logging:
+      loglevel: warn
+
+  service:
+    pipelines:
+      metrics:
+        receivers: [otlp]
+        processors: [batch]
+        exporters: [prometheusremotewrite]
+      logs:
+        receivers: [filelog]
+        processors: [batch]
+        exporters: [loki]

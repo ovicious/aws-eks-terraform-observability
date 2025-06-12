@@ -1,0 +1,98 @@
+terraform {
+  required_version = ">= 1.0.0"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.99.0"
+    }
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 2.0"
+    }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 2.0"
+    }
+  }
+}
+
+provider "aws" {
+  region  = var.aws_region
+  profile = var.aws_profile
+}
+
+provider "helm" {
+  kubernetes {
+    host                   = try(module.eks[0].cluster_endpoint, "")
+    cluster_ca_certificate = try(base64decode(module.eks[0].cluster_certificate_authority_data), "")
+    token                  = try(module.eks[0].cluster_auth_token, "")
+  }
+}
+
+provider "kubernetes" {
+  host                   = try(module.eks[0].cluster_endpoint, "")
+  cluster_ca_certificate = try(base64decode(module.eks[0].cluster_certificate_authority_data), "")
+  token                  = try(module.eks[0].cluster_auth_token, "")
+}
+
+locals {
+  common_tags = {
+    Environment = var.env_name
+    Project     = "jucr-observability"
+  }
+}
+
+module "vpc" {
+  count      = var.enable_vpc ? 1 : 0
+  source     = "./modules/vpc"
+  env_name   = var.env_name
+  aws_region = var.aws_region
+  tags       = local.common_tags
+}
+
+module "iam" {
+  count    = var.enable_iam ? 1 : 0
+  source   = "./modules/iam"
+  env_name = var.env_name
+}
+
+module "eks" {
+  count              = var.enable_eks ? 1 : 0
+  source             = "./modules/eks"
+  aws_profile        = var.aws_profile
+  env_name           = var.env_name
+  vpc_id             = try(module.vpc[0].vpc_id, null)
+  private_subnet_ids = try(module.vpc[0].private_subnet_ids, null)
+  public_subnet_ids  = try(module.vpc[0].public_subnet_ids, null)
+  cluster_role_name  = try(module.iam[0].eks_cluster_role_name, null)
+  node_role_name     = try(module.iam[0].eks_node_role_name, null)
+  cluster_role_arn   = try(module.iam[0].eks_cluster_role_arn, null)
+  node_role_arn      = try(module.iam[0].eks_node_role_arn, null)
+  instance_types     = var.instance_types
+  desired_capacity   = var.desired_capacity
+  min_capacity       = var.min_capacity
+  max_capacity       = var.max_capacity
+  cluster_version    = var.cluster_version
+}
+
+module "observability" {
+  count  = var.enable_observability ? 1 : 0
+  source = "./modules/observability"
+
+  env_name          = var.env_name
+  cluster_name      = try(module.eks[0].cluster_name, null)
+  oidc_provider_arn = try(module.eks[0].oidc_provider_arn, null)
+  oidc_provider_url = try(module.eks[0].oidc_provider_url, null)
+  region            = var.aws_region
+
+  enable_alb_controller       = var.enable_alb_controller
+  alb_controller_role_arn     = try(module.iam[0].alb_controller_role_arn, null)
+  cluster_autoscaler_role_arn = try(module.iam[0].cluster_autoscaler_role_arn, null)
+
+  observability_config = {
+    storage_size    = var.observability_storage_size
+    retention_hours = var.observability_retention_hours
+  }
+
+  depends_on = [module.eks]
+}
