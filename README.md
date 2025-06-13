@@ -116,7 +116,7 @@ It is designed for **high availability, scalability, and deep observability**, w
 ---
 
 ## Quick Start
-
+0. Go to infra directory `cd infra`
 1. Clone this repo and review `terraform.tfvars`.
 2. Run `terraform init` and `terraform apply`.
 3. Access Grafana and Prometheus via port-forward or LoadBalancer.
