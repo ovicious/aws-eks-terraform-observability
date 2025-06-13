@@ -1,10 +1,95 @@
+# persistence:
+#   enabled: true
+#   storageClassName: "ebs-sc"
+#   size: ${storage_size}
+#   accessModes:
+#     - ReadWriteOnce
+
+# loki:
+#   config: |
+#     auth_enabled: false
+#     ingester:
+#       lifecycler:
+#         ring:
+#           kvstore:
+#             store: inmemory
+#         final_sleep: 0s
+#       chunk_idle_period: 5m
+#       chunk_target_size: 1048576
+#     schema_config:
+#       configs:
+#         - from: 2020-10-24
+#           store: boltdb-shipper
+#           object_store: filesystem
+#           schema: v11
+#           index:
+#             prefix: index_
+#             period: 24h
+#     server:
+#       http_listen_port: 3100
+#     storage_config:
+#       boltdb_shipper:
+#         active_index_directory: /var/loki/boltdb-shipper-active
+#         cache_location: /var/loki/boltdb-shipper-cache
+#         cache_ttl: 24h
+#         shared_store: filesystem
+#       filesystem:
+#         directory: /var/loki/chunks
+#     limits_config:
+#       retention_period: ${retention_hours}h
+#     chunk_store_config:
+#       max_look_back_period: ${retention_hours}h
+#     table_manager:
+#       retention_deletes_enabled: true
+#       retention_interval: 1h
+
+######################################
+
+# loki-values.yaml
+
+# Explicitly set the deployment mode to SingleBinary
+deploymentMode: SingleBinary
+
+# Disable all distributed components
+# This ensures that only the 'singleBinary' component runs and creates its PVC
+backend:
+  enabled: false
+read:
+  enabled: false
+write:
+  enabled: false
+queryFrontend:
+  enabled: false
+compactor:
+  enabled: false
+distributor:
+  enabled: false
+querier:
+  enabled: false
+indexGateway:
+  enabled: false
+ruler:
+  enabled: false
+# Add other components if they are enabled by default and you don't need them
+# E.g., if you see ingester, authenticator, etc., disable them if not needed.
+
+# Configure persistence for the singleBinary component
+# The singleBinary component handles persistence for the entire Loki instance
+singleBinary:
+  persistence:
+    enabled: false
+
 loki:
+  # Loki's core configuration, nested under 'loki.config'
   config: |
     auth_enabled: false
+    server:
+      http_listen_port: 3100
     ingester:
       lifecycler:
         ring:
           kvstore:
+            # In-memory KV store is fine for SingleBinary mode
             store: inmemory
         final_sleep: 0s
       chunk_idle_period: 5m
@@ -18,10 +103,9 @@ loki:
           index:
             prefix: index_
             period: 24h
-    server:
-      http_listen_port: 3100
     storage_config:
       boltdb_shipper:
+        # These directories will be on the PVC
         active_index_directory: /var/loki/boltdb-shipper-active
         cache_location: /var/loki/boltdb-shipper-cache
         cache_ttl: 24h
@@ -35,12 +119,3 @@ loki:
     table_manager:
       retention_deletes_enabled: true
       retention_interval: 1h
-    retention_table_period: 1h
-
-persistence:
-  enabled: true
-  storageClassName: "ebs-sc"
-  # size: ${storage_size}
-  size: 1Gi
-  accessModes:
-    - ReadWriteOnce

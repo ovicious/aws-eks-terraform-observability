@@ -8,3 +8,6 @@ prometheus:
           resources:
             requests:
               storage: ${storage_size}
+
+nodeExporter:
+  enabled: false

@@ -63,3 +63,30 @@ variable "grafana_admin_password" {
   type        = string
 }
 
+variable "enable_prometheus" {
+  description = "Enable Prometheus"
+  type        = bool
+  default     = true
+}
+
+variable "node_role_name" {
+  description = "Name of the EKS node IAM role"
+  type        = string
+}
+
+variable "enable_loki" {
+  description = "Enable Loki"
+  type        = bool
+  default     = true
+}
+variable "enable_otel_collector" {
+  description = "Enable OpenTelemetry Collector"
+  type        = bool
+  default     = true
+}
+
+variable "enable_adot_collector" {
+  description = "Enable ADOT Collector"
+  type        = bool
+  default     = true
+}

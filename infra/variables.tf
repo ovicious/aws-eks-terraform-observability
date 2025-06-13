@@ -94,7 +94,7 @@ variable "cluster_version" {
 variable "observability_storage_size" {
   description = "Storage size for observability stack"
   type        = string
-  default     = "1Gi"
+  default     = "20Gi"
 }
 
 variable "observability_retention_hours" {
@@ -118,3 +118,26 @@ variable "enable_alb_controller" {
   default     = false # Disabled by default
 }
 
+variable "enable_prometheus" {
+  description = "Enable Prometheus"
+  type        = bool
+  default     = true
+}
+
+variable "enable_loki" {
+  description = "Enable Loki"
+  type        = bool
+  default     = true
+}
+
+variable "enable_otel_collector" {
+  description = "Enable OpenTelemetry Collector"
+  type        = bool
+  default     = false
+}
+
+variable "enable_adot_collector" {
+  description = "Enable ADOT Collector"
+  type        = bool
+  default     = true
+}

@@ -98,5 +98,10 @@ module "observability" {
   }
   grafana_admin_password = var.grafana_admin_password
   grafana_admin_user     = var.grafana_admin_user
+  enable_prometheus      = var.enable_prometheus
+  enable_loki            = var.enable_loki
+  enable_otel_collector = var.enable_otel_collector
+  enable_adot_collector  = var.enable_adot_collector
+  node_role_name         = try(module.iam[0].eks_node_role_name, null)
   depends_on = [module.eks]
 }

@@ -1,0 +1,54 @@
+mode: deployment
+
+config:
+  receivers:
+    prometheus:
+      config:
+        scrape_configs:
+          - job_name: 'kubernetes-pods'
+            scrape_interval: 60s           # Increase interval to reduce data points (default is 15s)
+            scrape_timeout: 10s
+            kubernetes_sd_configs:
+              - role: pod
+            relabel_configs:
+              - action: keep
+                regex: 'default|monitoring'
+                source_labels: [__meta_kubernetes_namespace]
+    filelog:
+      include: [ /var/log/containers/*.log ]
+      start_at: beginning
+      # Reduce log volume by filtering only important logs (optional)
+      # operators:
+      #   - type: filter
+      #     expr: 'severity >= "error"'
+
+  processors:
+    batch:
+      timeout: 10s
+      send_batch_size: 1024
+    memory_limiter:
+      check_interval: 1s
+      limit_mib: 200      # Lower memory usage
+      spike_limit_mib: 50
+
+  exporters:
+    awscloudwatchlogs:
+      log_group_name: "/eks/observability/logs"
+      region: "eu-west-1"
+      # Reduce retention to minimum (1 day) to save cost
+      log_retention: 1
+      # Optionally, use log_stream_name_template to aggregate logs
+      # log_stream_name_template: "adot-logs"
+    prometheusremotewrite:
+      endpoint: "http://prometheus-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090/api/v1/write"
+
+  service:
+    pipelines:
+      logs:
+        receivers: [filelog]
+        processors: [batch, memory_limiter]
+        exporters: [awscloudwatchlogs]
+      metrics:
+        receivers: [prometheus]
+        processors: [batch, memory_limiter]
+        exporters: [prometheusremotewrite]

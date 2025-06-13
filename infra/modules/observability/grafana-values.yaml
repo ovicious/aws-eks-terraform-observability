@@ -9,7 +9,7 @@ datasources:
         type: prometheus
         url: http://prometheus-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090
         access: proxy
-      - name: Loki
-        type: loki
-        url: http://loki.monitoring.svc.cluster.local:3100
-        access: proxy
+      - name: CloudWatch
+        type: cloudwatch
+        jsonData:
+          defaultRegion: eu-west-1

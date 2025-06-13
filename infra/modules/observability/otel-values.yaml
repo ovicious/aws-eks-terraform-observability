@@ -18,15 +18,8 @@ config:
       spike_limit_mib: 200
 
   exporters:
-    prometheusremotewrite:
-      endpoint: "http://prometheus-kube-prometheus-prometheus:9090/api/v1/write"
     loki:
       endpoint: "${loki_endpoint}"
-      labels:
-        resource:
-          k8s.cluster.name: "${cluster_name}"
-    logging:
-      loglevel: warn
 
   service:
     pipelines:

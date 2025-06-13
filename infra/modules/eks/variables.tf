@@ -80,3 +80,15 @@ variable "node_role_arn" {
   type        = string
 }
 
+variable "enable_otel_collector" {
+  description = "Enable Otel Collector"
+  type        = bool
+  default     = true
+}
+
+variable "enable_adot_collector" {
+  description = "Enable ADOT Collector"
+  type        = bool
+  default     = true
+}
+
