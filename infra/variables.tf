@@ -94,7 +94,7 @@ variable "cluster_version" {
 variable "observability_storage_size" {
   description = "Storage size for observability stack"
   type        = string
-  default     = "5Gi"
+  default     = "1Gi"
 }
 
 variable "observability_retention_hours" {

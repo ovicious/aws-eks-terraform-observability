@@ -1,5 +1,5 @@
 loki:
-  config:
+  config: |
     auth_enabled: false
     ingester:
       lifecycler:
@@ -28,3 +28,19 @@ loki:
         shared_store: filesystem
       filesystem:
         directory: /var/loki/chunks
+    limits_config:
+      retention_period: ${retention_hours}h
+    chunk_store_config:
+      max_look_back_period: ${retention_hours}h
+    table_manager:
+      retention_deletes_enabled: true
+      retention_interval: 1h
+    retention_table_period: 1h
+
+persistence:
+  enabled: true
+  storageClassName: "ebs-sc"
+  # size: ${storage_size}
+  size: 1Gi
+  accessModes:
+    - ReadWriteOnce

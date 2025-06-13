@@ -48,8 +48,8 @@ variable "observability_config" {
     retention_hours = number
   })
   default = {
-    storage_size    = "5Gi"
-    retention_hours = 2
+    storage_size    = "1Gi"
+    retention_hours = 0.5
   }
 }
 
@@ -62,3 +62,4 @@ variable "grafana_admin_password" {
   description = "Grafana admin password"
   type        = string
 }
+

@@ -37,6 +37,12 @@ resource "aws_eks_node_group" "main" {
     aws_iam_role_policy_attachment.eks_cni_policy,
     aws_iam_role_policy_attachment.ec2_container_registry_read_only,
   ]
+  tags = {
+    "kubernetes.io/cluster/${aws_eks_cluster.main.name}" = "owned"
+    "Name" = "${var.env_name}-node-group"
+    "Environment" = var.env_name
+
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
