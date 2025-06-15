@@ -15,7 +15,7 @@ It is designed for **high availability, scalability, and deep observability**, w
 
 ## Terraform Dependency Graph
 
-![Terraform Graph](graph.svg)
+![Terraform Graph](docs/diagrams/graph.svg)
 
 ---
 
