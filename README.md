@@ -1,4 +1,4 @@
-# JUCR DevOps Challenge — Kubernetes & Observability Stack
+# Kubernetes & Observability Stack
 
 ## Solution Overview
 
